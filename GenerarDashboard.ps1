@@ -5,6 +5,7 @@
 
 $DirectorioActual = $PSScriptRoot
 if (-not $DirectorioActual) { $DirectorioActual = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path) }
+if (-not $DirectorioActual) { $DirectorioActual = [System.IO.Path]::GetDirectoryName([System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) }
 if (-not $DirectorioActual) { $DirectorioActual = $PWD.Path }
 
 $RutaBase = Join-Path -Path $DirectorioActual -ChildPath "Recolector"
