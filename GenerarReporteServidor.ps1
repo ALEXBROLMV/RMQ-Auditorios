@@ -46,6 +46,17 @@ $PanelFiltros.Dock = "Top"
 $PanelFiltros.Height = 80
 $PanelFiltros.BackColor = [System.Drawing.Color]::FromArgb(26, 67, 80)
 
+$RutaLogo = Join-Path -Path $DirectorioExe -ChildPath "LOGORMQ.png"
+if (Test-Path $RutaLogo) {
+    $LogoBox = New-Object System.Windows.Forms.PictureBox
+    $LogoBox.Image = [System.Drawing.Image]::FromFile($RutaLogo)
+    $LogoBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+    $LogoBox.Size = New-Object System.Drawing.Size(120, 60)
+    $LogoBox.Location = New-Object System.Drawing.Point(850, 10)
+    $LogoBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Right
+    $PanelFiltros.Controls.Add($LogoBox)
+}
+
 $LblFecha = New-Object System.Windows.Forms.Label
 $LblFecha.Text = "1. Selecciona el Día:"
 $LblFecha.ForeColor = [System.Drawing.Color]::White
@@ -139,6 +150,10 @@ $BtnPDF.Font = New-Object System.Drawing.Font("Arial", 9, [System.Drawing.FontSt
 $PanelBotones.Controls.Add($BtnExcel)
 $PanelBotones.Controls.Add($BtnPDF)
 $Form.Controls.Add($PanelBotones)
+
+$PanelFiltros.SendToBack()
+$PanelBotones.SendToBack()
+$TabControl.BringToFront()
 
 # ----------------- EVENTOS Y LÓGICA -----------------
 

@@ -90,7 +90,7 @@ try {
         foreach ($ev in $Timeline) {
             if ($ev.Id -in 4624, 4778) {
                 if ($SesionActual) {
-                    $SesionActual.Fin = $ev.Time; $SesionActual.FinRazon = "Reconexión"; $ListaFinalAccesos += $SesionActual
+                    $SesionActual.Fin = $ev.Time; $SesionActual.FinRazon = "Reconexion"; $ListaFinalAccesos += $SesionActual
                 }
                 $SesionActual = [PSCustomObject]@{ RecordId = $ev.RecordId; Usuario = $User; Inicio = $ev.Time; Fin = $null; FinRazon = ""; Tipo = $ev.Tipo }
             } elseif ($ev.Id -in 4634, 4779) {
