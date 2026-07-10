@@ -4,7 +4,8 @@
     Se recomienda programarlo en el Programador de Tareas para ejecutarse cada hora.
 #>
 
-$RutaBase = "C:\PROYECTOS\RMQ\Recolector"
+$RutaBase = $PSScriptRoot
+if (-not $RutaBase) { $RutaBase = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path) }
 $RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
 $RutaDLL = Join-Path -Path $RutaBase -ChildPath "System.Data.SQLite.dll"
 

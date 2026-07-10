@@ -7,8 +7,9 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-# Comprobar base de datos
-$RutaBase = "C:\PROYECTOS\RMQ\Recolector"
+$DirectorioExe = [System.IO.Path]::GetDirectoryName([System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName)
+if (-not $DirectorioExe) { $DirectorioExe = $PWD.Path }
+$RutaBase = Join-Path -Path $DirectorioExe -ChildPath "Recolector"
 $RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
 $RutaDLL = Join-Path -Path $RutaBase -ChildPath "System.Data.SQLite.dll"
 
