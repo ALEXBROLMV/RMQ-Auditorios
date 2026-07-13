@@ -57,7 +57,7 @@ $Conexion.Close()
 $JSONData = @{ Accesos = $Accesos; Apps = $Apps } | ConvertTo-Json -Depth 5 -Compress
 
 # --- HTML TEMPLATE ---
-$HTML = @"
+$HTML = @'
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -226,7 +226,7 @@ $HTML = @"
             sortedUsers.forEach((user, idx) => {
                 const div = document.createElement('div');
                 div.className = 'user-item';
-                div.innerHTML = `<div class="user-name">\${user}</div><div class="user-meta">Clic para expandir</div>`;
+                div.innerHTML = `<div class="user-name">${user}</div><div class="user-meta">Clic para expandir</div>`;
                 div.onclick = () => {
                     document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
                     div.classList.add('active');
@@ -246,7 +246,7 @@ $HTML = @"
             if (diffMs < 0) return "< 1m";
             const diffHrs = Math.floor(diffMs / 3600000);
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
-            return `\${diffHrs}h \${diffMins}m`;
+            return `${diffHrs}h ${diffMins}m`;
         }
 
         function formatTime(dateStr) {
@@ -265,17 +265,17 @@ $HTML = @"
             let html = `
                 <div class="header-dash">
                     <div>
-                        <h2>\${user}</h2>
-                        <p>Actividad registrada el \${dateStr}</p>
+                        <h2>${user}</h2>
+                        <p>Actividad registrada el ${dateStr}</p>
                     </div>
                 </div>
                 <div class="metrics-grid">
                     <div class="metric-card">
-                        <div class="metric-value">\${totalConexiones}</div>
+                        <div class="metric-value">${totalConexiones}</div>
                         <div class="metric-label">Inicios de Sesión</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-value">\${totalApps}</div>
+                        <div class="metric-value">${totalApps}</div>
                         <div class="metric-label">Programas Ejecutados</div>
                     </div>
                 </div>
@@ -286,14 +286,14 @@ $HTML = @"
             if (userAccesos.length > 0) {
                 html += `<div class="timeline-container">`;
                 userAccesos.forEach(a => {
-                    const status = a.Fin ? `<span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">Cerró sesión a las \${formatTime(a.Fin)}</span>` : `<span class="status-active">EN LÍNEA</span>`;
+                    const status = a.Fin ? `<span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">Cerró sesión a las ${formatTime(a.Fin)}</span>` : `<span class="status-active">EN LÍNEA</span>`;
                     html += `
                         <div class="timeline-item">
-                            <div class="time-box">\${formatTime(a.Inicio)}</div>
+                            <div class="time-box">${formatTime(a.Inicio)}</div>
                             <div class="event-box">
-                                <span class="event-title">Sesión \${a.Tipo}</span>
-                                <span class="event-dur">Duración: \${formatDuration(a.Inicio, a.Fin)}</span>
-                                \${status}
+                                <span class="event-title">Sesión ${a.Tipo}</span>
+                                <span class="event-dur">Duración: ${formatDuration(a.Inicio, a.Fin)}</span>
+                                ${status}
                             </div>
                         </div>
                     `;
@@ -308,12 +308,12 @@ $HTML = @"
             if (userApps.length > 0) {
                 html += `<div class="app-grid">`;
                 userApps.forEach(a => {
-                    const status = a.Fin ? `Cerrado a las \${formatTime(a.Fin)}` : `En Uso Actualmente`;
+                    const status = a.Fin ? `Cerrado a las ${formatTime(a.Fin)}` : `En Uso Actualmente`;
                     html += `
                         <div class="app-card">
-                            <div class="app-name">\${a.Programa}</div>
-                            <div class="app-time">Abrió: \${formatTime(a.Inicio)} &bull; Duró \${formatDuration(a.Inicio, a.Fin)}</div>
-                            <div class="app-time" style="margin-top:5px; color:var(--secondary)">\${status}</div>
+                            <div class="app-name">${a.Programa}</div>
+                            <div class="app-time">Abrió: ${formatTime(a.Inicio)} &bull; Duró ${formatDuration(a.Inicio, a.Fin)}</div>
+                            <div class="app-time" style="margin-top:5px; color:var(--secondary)">${status}</div>
                         </div>
                     `;
                 });
@@ -330,7 +330,9 @@ $HTML = @"
     </script>
 </body>
 </html>
-"@
+'@
+
+$HTML = $HTML.Replace('const DB = $JSONData;', "const DB = $JSONData;")
 
 $RutaHTML = Join-Path -Path $DirectorioActual -ChildPath "Dashboard.html"
 $HTML | Out-File -FilePath $RutaHTML -Encoding UTF8
