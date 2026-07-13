@@ -139,16 +139,19 @@ try {
 
     $HistorialApp = @{}
 
+    $c = 0
     foreach ($ev in $EventosProcesos) {
-        $xml = [xml]$ev.ToXml()
-        $data = $xml.Event.EventData.Data
-        $processId = ($data | Where-Object { $_.Name -in 'NewProcessId', 'ProcessId' } | Select-Object -First 1).'#text'
-        $procNamePath = ($data | Where-Object { $_.Name -in 'NewProcessName', 'ProcessName' } | Select-Object -First 1).'#text'
-        $user = ($data | Where-Object { $_.Name -eq 'SubjectUserName' }).'#text'
-
-        if ($procNamePath -match '(?i)(contpaq|contabilidad|nomina|comercial|adminpaq|factura|chrome|msedge|anydesk|teamviewer|excel|winword|outlook)') {
-            $procNameRaw = [System.IO.Path]::GetFileName($procNamePath)
-            $procName = Obtener-NombreAmigable $procNameRaw
+        $c++
+        if ($c % 5000 -eq 0) { Write-Host "Procesados $c eventos..." }
+        
+        if ($ev.Properties.Count -ge 6) {
+            $procNamePath = $ev.Properties[5].Value
+            if ($procNamePath -match '(?i)(contpaq|contabilidad|nomina|comercial|adminpaq|factura|chrome|msedge|anydesk|teamviewer|excel|winword|outlook)') {
+                $processId = $ev.Properties[4].Value
+                $user = $ev.Properties[1].Value
+                
+                $procNameRaw = [System.IO.Path]::GetFileName($procNamePath)
+                $procName = Obtener-NombreAmigable $procNameRaw
             
             $key = "$processId-$user-$procName"
             if (-not $HistorialApp.ContainsKey($key)) { 
