@@ -3,6 +3,7 @@
     Recolector Automático de Eventos para Base de Datos SQLite.
     Se recomienda programarlo en el Programador de Tareas para ejecutarse cada hora.
 #>
+#Requires -RunAsAdministrator
 
 $RutaBase = $PSScriptRoot
 if (-not $RutaBase) { $RutaBase = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path) }
