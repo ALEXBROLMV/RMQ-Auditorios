@@ -344,6 +344,7 @@ try {
         }
 
     </script>
+    <div style="position:fixed; bottom:5px; right:5px; color:rgba(255,255,255,0.2); font-size:10px; z-index:9999;">v3.0</div>
 </body>
 </html>
 '@
