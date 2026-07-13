@@ -132,8 +132,11 @@ try {
 }
 
 # ----------------- RECOLECTAR APPS -----------------
+Write-Host "Iniciando Recolector..."
 try {
     $EventosProcesos = Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4688, 4689; StartTime=(Get-Date).AddDays(-2)} -ErrorAction SilentlyContinue
+    Write-Host "Se encontraron eventos de procesos."
+
     $HistorialApp = @{}
 
     foreach ($ev in $EventosProcesos) {
@@ -189,3 +192,5 @@ $Conexion.Close()
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.MessageBox]::Show("Recolección de datos terminada con éxito. Ya puedes abrir el Dashboard.", "Auditoría RMQ", 0, [System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null
+Write-Host "Presiona Enter para cerrar esta ventana..."
+Read-Host
