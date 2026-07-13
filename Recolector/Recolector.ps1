@@ -73,15 +73,25 @@ try {
         $Usuario = ($data | Where-Object { $_.Name -eq 'TargetUserName' }).'#text'
         
         if ($Usuario -and $Usuario -notmatch '(?i)(SYSTEM|LOCAL SERVICE|NETWORK SERVICE|UMFD-\d+|DWM-\d+|MSSQL.*|SQLTELEMETRY.*|defaultuser0|ANONYMOUS LOGON)' -and $Usuario -notlike "*$") {
-            if (-not $EventosPorUsuario.ContainsKey($Usuario)) { $EventosPorUsuario[$Usuario] = @() }
             $Tipo = "Local"
+            $Valido = $true
             if ($ev.Id -in 4624, 4634) {
                 $logonType = ($data | Where-Object { $_.Name -eq 'LogonType' }).'#text'
-                if ($logonType -in '10', '3') { $Tipo = "Remoto (RDP/Red)" }
+                if ($logonType -notin '2', '7', '10', '11') { 
+                    $Valido = $false 
+                } else {
+                    if ($logonType -eq '10') { $Tipo = "Remoto (RDP)" }
+                    elseif ($logonType -in '2', '11') { $Tipo = "Local/Físico" }
+                    elseif ($logonType -eq '7') { $Tipo = "Desbloqueo" }
+                }
             } else {
-                $Tipo = "Remoto (RDP)"
+                $Tipo = "RDP (Des/Conexión)"
             }
-            $EventosPorUsuario[$Usuario] += [PSCustomObject]@{ Id = $ev.Id; Time = $ev.TimeCreated; Tipo = $Tipo; RecordId = $ev.RecordId }
+            
+            if ($Valido) {
+                if (-not $EventosPorUsuario.ContainsKey($Usuario)) { $EventosPorUsuario[$Usuario] = @() }
+                $EventosPorUsuario[$Usuario] += [PSCustomObject]@{ Id = $ev.Id; Time = $ev.TimeCreated; Tipo = $Tipo; RecordId = $ev.RecordId }
+            }
         }
     }
 
