@@ -3,61 +3,63 @@
     Genera un Dashboard HTML interactivo a partir de la base de datos SQLite.
 #>
 
-$DirectorioActual = $PSScriptRoot
-if ([string]::IsNullOrWhiteSpace($DirectorioActual)) { 
-    $DirectorioActual = $PWD.Path 
-}
-
-$RutaBase = Join-Path -Path $DirectorioActual -ChildPath "Recolector"
-$RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
-$RutaDLL = Join-Path -Path $RutaBase -ChildPath "System.Data.SQLite.dll"
-
-if (-not (Test-Path $RutaDLL) -or -not (Test-Path $RutaDB)) {
-    Write-Host "Error: Faltan archivos de la base de datos."
-    exit
-}
-
-Add-Type -Path $RutaDLL
-$Conexion = New-Object System.Data.SQLite.SQLiteConnection("Data Source=$RutaDB;Version=3;")
-$Conexion.Open()
-
-# Extraer Datos
-$Accesos = @()
-$Cmd = $Conexion.CreateCommand()
-$Cmd.CommandText = "SELECT * FROM HistorialAccesos ORDER BY Inicio DESC"
-$Reader = $Cmd.ExecuteReader()
-while ($Reader.Read()) {
-    $Fin = if ([string]::IsNullOrEmpty($Reader["Fin"])) { $null } else { [datetime]$Reader["Fin"] }
-    $Accesos += @{
-        Usuario = $Reader["Usuario"].ToString()
-        Inicio = ([datetime]$Reader["Inicio"]).ToString("yyyy-MM-ddTHH:mm:ss")
-        Fin = if ($Fin) { $Fin.ToString("yyyy-MM-ddTHH:mm:ss") } else { $null }
-        FinRazon = $Reader["FinRazon"].ToString()
-        Tipo = $Reader["Tipo"].ToString()
+try {
+    $DirectorioActual = $PSScriptRoot
+    if ([string]::IsNullOrWhiteSpace($DirectorioActual)) { 
+        $DirectorioActual = $PWD.Path 
     }
-}
-$Reader.Close()
 
-$Apps = @()
-$CmdApp = $Conexion.CreateCommand()
-$CmdApp.CommandText = "SELECT * FROM HistorialApps ORDER BY Inicio DESC"
-$ReaderApp = $CmdApp.ExecuteReader()
-while ($ReaderApp.Read()) {
-    $Fin = if ([string]::IsNullOrEmpty($ReaderApp["Fin"])) { $null } else { [datetime]$ReaderApp["Fin"] }
-    $Apps += @{
-        Usuario = $ReaderApp["Usuario"].ToString()
-        Programa = $ReaderApp["Programa"].ToString()
-        Inicio = ([datetime]$ReaderApp["Inicio"]).ToString("yyyy-MM-ddTHH:mm:ss")
-        Fin = if ($Fin) { $Fin.ToString("yyyy-MM-ddTHH:mm:ss") } else { $null }
+    $RutaBase = Join-Path -Path $DirectorioActual -ChildPath "Recolector"
+    $RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
+    $RutaDLL = Join-Path -Path $RutaBase -ChildPath "System.Data.SQLite.dll"
+
+    if (-not (Test-Path $RutaDLL) -or -not (Test-Path $RutaDB)) {
+        Add-Type -AssemblyName System.Windows.Forms
+        [System.Windows.Forms.MessageBox]::Show("Error: Faltan archivos de la base de datos.", "Error", 0, [System.Windows.Forms.MessageBoxIcon]::Error) | Out-Null
+        exit
     }
-}
-$ReaderApp.Close()
-$Conexion.Close()
 
-$JSONData = @{ Accesos = $Accesos; Apps = $Apps } | ConvertTo-Json -Depth 5 -Compress
+    Add-Type -Path $RutaDLL
+    $Conexion = New-Object System.Data.SQLite.SQLiteConnection("Data Source=$RutaDB;Version=3;")
+    $Conexion.Open()
 
-# --- HTML TEMPLATE ---
-$HTML = @'
+    # Extraer Datos
+    $Accesos = @()
+    $Cmd = $Conexion.CreateCommand()
+    $Cmd.CommandText = "SELECT * FROM HistorialAccesos ORDER BY Inicio DESC"
+    $Reader = $Cmd.ExecuteReader()
+    while ($Reader.Read()) {
+        $Fin = if ([string]::IsNullOrEmpty($Reader["Fin"])) { $null } else { [datetime]$Reader["Fin"] }
+        $Accesos += @{
+            Usuario = $Reader["Usuario"].ToString()
+            Inicio = ([datetime]$Reader["Inicio"]).ToString("yyyy-MM-ddTHH:mm:ss")
+            Fin = if ($Fin) { $Fin.ToString("yyyy-MM-ddTHH:mm:ss") } else { $null }
+            FinRazon = $Reader["FinRazon"].ToString()
+            Tipo = $Reader["Tipo"].ToString()
+        }
+    }
+    $Reader.Close()
+
+    $Apps = @()
+    $CmdApp = $Conexion.CreateCommand()
+    $CmdApp.CommandText = "SELECT * FROM HistorialApps ORDER BY Inicio DESC"
+    $ReaderApp = $CmdApp.ExecuteReader()
+    while ($ReaderApp.Read()) {
+        $Fin = if ([string]::IsNullOrEmpty($ReaderApp["Fin"])) { $null } else { [datetime]$ReaderApp["Fin"] }
+        $Apps += @{
+            Usuario = $ReaderApp["Usuario"].ToString()
+            Programa = $ReaderApp["Programa"].ToString()
+            Inicio = ([datetime]$ReaderApp["Inicio"]).ToString("yyyy-MM-ddTHH:mm:ss")
+            Fin = if ($Fin) { $Fin.ToString("yyyy-MM-ddTHH:mm:ss") } else { $null }
+        }
+    }
+    $ReaderApp.Close()
+    $Conexion.Close()
+
+    $JSONData = @{ Accesos = $Accesos; Apps = $Apps } | ConvertTo-Json -Depth 5 -Compress
+
+    # --- HTML TEMPLATE ---
+    $HTML = @'
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -346,10 +348,14 @@ $HTML = @'
 </html>
 '@
 
-$HTML = $HTML.Replace('const DB = $JSONData;', "const DB = $JSONData;")
+    $HTML = $HTML.Replace('const DB = $JSONData;', "const DB = $JSONData;")
 
-$RutaHTML = Join-Path -Path $DirectorioActual -ChildPath "Dashboard.html"
-$HTML | Out-File -FilePath $RutaHTML -Encoding UTF8
+    $RutaHTML = Join-Path -Path $DirectorioActual -ChildPath "Dashboard.html"
+    $HTML | Out-File -FilePath $RutaHTML -Encoding UTF8
 
-Write-Host "Generando Dashboard..."
-Start-Process $RutaHTML
+    Write-Host "Generando Dashboard..."
+    Start-Process $RutaHTML
+} catch {
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.MessageBox]::Show("Error inesperado:`n$_", "Error", 0, [System.Windows.Forms.MessageBoxIcon]::Error) | Out-Null
+}
