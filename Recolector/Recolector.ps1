@@ -6,7 +6,9 @@
 #Requires -RunAsAdministrator
 
 $RutaBase = $PSScriptRoot
-if (-not $RutaBase) { $RutaBase = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path) }
+if ([string]::IsNullOrWhiteSpace($RutaBase)) {
+    $RutaBase = [System.AppDomain]::CurrentDomain.BaseDirectory
+}
 $RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
 $RutaDLL = Join-Path -Path $RutaBase -ChildPath "System.Data.SQLite.dll"
 
