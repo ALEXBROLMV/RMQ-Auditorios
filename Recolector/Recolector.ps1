@@ -186,3 +186,6 @@ try {
 }
 
 $Conexion.Close()
+
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.MessageBox]::Show("Recolección de datos terminada con éxito. Ya puedes abrir el Dashboard.", "Auditoría RMQ", 0, [System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null
