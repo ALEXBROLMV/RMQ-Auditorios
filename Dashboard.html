@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard de AuditorÃ­a</title>
+    <title>Dashboard de Auditoría</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         
@@ -104,7 +104,7 @@
 
     <div class="sidebar">
         <div class="logo-area">
-            <h1>AuditorÃ­a RMQ</h1>
+            <h1>Auditoría RMQ</h1>
         </div>
         <div class="filter-area">
             <label>Seleccionar Fecha:</label>
@@ -153,8 +153,8 @@
             const sortedUsers = Array.from(activeUsers).sort();
 
             if (sortedUsers.length === 0) {
-                userList.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top: 20px;">No hay actividad este dÃ­a.</div>';
-                mainContent.innerHTML = '<div class="empty-state"><h3>Sin Registros</h3><p>Nadie ingresÃ³ al servidor en la fecha seleccionada.</p></div>';
+                userList.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top: 20px;">No hay actividad este día.</div>';
+                mainContent.innerHTML = '<div class="empty-state"><h3>Sin Registros</h3><p>Nadie ingresó al servidor en la fecha seleccionada.</p></div>';
                 return;
             }
 
@@ -207,7 +207,7 @@
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <div class="metric-value">\</div>
-                        <div class="metric-label">Inicios de SesiÃ³n</div>
+                        <div class="metric-label">Inicios de Sesión</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-value">\</div>
@@ -217,17 +217,17 @@
             ;
 
             // Render Accesos (Timeline)
-            html += <div class="section-title">LÃ­nea de Tiempo de ConexiÃ³n</div>;
+            html += <div class="section-title">Línea de Tiempo de Conexión</div>;
             if (userAccesos.length > 0) {
                 html += <div class="timeline-container">;
                 userAccesos.forEach(a => {
-                    const status = a.Fin ? <span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">CerrÃ³ sesiÃ³n a las \</span> : <span class="status-active">EN LÃNEA</span>;
+                    const status = a.Fin ? <span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">Cerró sesión a las \</span> : <span class="status-active">EN LÍNEA</span>;
                     html += 
                         <div class="timeline-item">
                             <div class="time-box">\</div>
                             <div class="event-box">
-                                <span class="event-title">SesiÃ³n \</span>
-                                <span class="event-dur">DuraciÃ³n: \</span>
+                                <span class="event-title">Sesión \</span>
+                                <span class="event-dur">Duración: \</span>
                                 \
                             </div>
                         </div>
@@ -235,7 +235,7 @@
                 });
                 html += </div>;
             } else {
-                html += <p style="color: var(--text-muted)">No hay inicios de sesiÃ³n directos registrados.</p>;
+                html += <p style="color: var(--text-muted)">No hay inicios de sesión directos registrados.</p>;
             }
 
             // Render Apps
@@ -247,14 +247,14 @@
                     html += 
                         <div class="app-card">
                             <div class="app-name">\</div>
-                            <div class="app-time">AbriÃ³: \ &bull; DurÃ³ \</div>
+                            <div class="app-time">Abrió: \ &bull; Duró \</div>
                             <div class="app-time" style="margin-top:5px; color:var(--secondary)">\</div>
                         </div>
                     ;
                 });
                 html += </div>;
             } else {
-                html += <p style="color: var(--text-muted)">No ejecutÃ³ programas clave este dÃ­a.</p>;
+                html += <p style="color: var(--text-muted)">No ejecutó programas clave este día.</p>;
             }
 
             mainContent.innerHTML = html;
