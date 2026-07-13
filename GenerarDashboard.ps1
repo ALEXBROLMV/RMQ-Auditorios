@@ -184,6 +184,11 @@ $HTML = @"
 
     <script>
         const DB = $JSONData;
+        if (DB.Accesos && !Array.isArray(DB.Accesos)) DB.Accesos = [DB.Accesos];
+        if (!DB.Accesos) DB.Accesos = [];
+        if (DB.Apps && !Array.isArray(DB.Apps)) DB.Apps = [DB.Apps];
+        if (!DB.Apps) DB.Apps = [];
+
         
         const datePicker = document.getElementById('datePicker');
         const userList = document.getElementById('userList');
