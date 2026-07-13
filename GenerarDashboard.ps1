@@ -61,6 +61,15 @@ $HTML = @'
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            window.onload = function() {
+                var mc = document.getElementById('mainContent');
+                if (mc) mc.innerHTML = '<div style="color:red; padding:20px;"><h3>Error Crítico de JavaScript</h3><p>' + msg + ' (Línea ' + lineNo + ')</p></div>';
+            };
+            return false;
+        };
+    </script>
     <meta charset="UTF-8">
     <title>Dashboard de Auditoría</title>
     <style>
@@ -183,150 +192,155 @@ $HTML = @'
     </div>
 
     <script>
-        const DB = $JSONData;
-        if (DB.Accesos && !Array.isArray(DB.Accesos)) DB.Accesos = [DB.Accesos];
-        if (!DB.Accesos) DB.Accesos = [];
-        if (DB.Apps && !Array.isArray(DB.Apps)) DB.Apps = [DB.Apps];
-        if (!DB.Apps) DB.Apps = [];
+        try {
+            const DB = $JSONData;
+            if (DB.Accesos && !Array.isArray(DB.Accesos)) DB.Accesos = [DB.Accesos];
+            if (!DB.Accesos) DB.Accesos = [];
+            if (DB.Apps && !Array.isArray(DB.Apps)) DB.Apps = [DB.Apps];
+            if (!DB.Apps) DB.Apps = [];
 
-        
-        const datePicker = document.getElementById('datePicker');
-        const userList = document.getElementById('userList');
-        const mainContent = document.getElementById('mainContent');
-
-        // Initialize with today
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        const todayStr = yyyy + "-" + mm + "-" + dd;
-        
-        datePicker.value = todayStr;
-
-        datePicker.addEventListener('change', renderUsers);
-
-        function renderUsers() {
-            const selectedDate = datePicker.value;
-            userList.innerHTML = '';
             
-            // Find users active on this date
-            const activeUsers = new Set();
+            const datePicker = document.getElementById('datePicker');
+            const userList = document.getElementById('userList');
+            const mainContent = document.getElementById('mainContent');
+
+            // Initialize with today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayStr = yyyy + "-" + mm + "-" + dd;
             
-            DB.Accesos.forEach(a => { if (a.Inicio.startsWith(selectedDate)) activeUsers.add(a.Usuario); });
-            DB.Apps.forEach(a => { if (a.Inicio.startsWith(selectedDate)) activeUsers.add(a.Usuario); });
+            datePicker.value = todayStr;
 
-            const sortedUsers = Array.from(activeUsers).sort();
+            datePicker.addEventListener('change', renderUsers);
 
-            if (sortedUsers.length === 0) {
-                userList.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top: 20px;">No hay actividad este día.</div>';
-                mainContent.innerHTML = '<div class="empty-state"><h3>Sin Registros</h3><p>Nadie ingresó al servidor en la fecha seleccionada.</p></div>';
-                return;
-            }
-
-            sortedUsers.forEach((user, idx) => {
-                const div = document.createElement('div');
-                div.className = 'user-item';
-                div.innerHTML = `<div class="user-name">${user}</div><div class="user-meta">Clic para expandir</div>`;
-                div.onclick = () => {
-                    document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-                    div.classList.add('active');
-                    renderDashboard(user, selectedDate);
-                };
-                userList.appendChild(div);
+            function renderUsers() {
+                const selectedDate = datePicker.value;
+                userList.innerHTML = '';
                 
-                // Auto-select first user
-                if (idx === 0) div.click();
-            });
-        }
+                // Find users active on this date
+                const activeUsers = new Set();
+                
+                DB.Accesos.forEach(a => { if (a.Inicio.startsWith(selectedDate)) activeUsers.add(a.Usuario); });
+                DB.Apps.forEach(a => { if (a.Inicio.startsWith(selectedDate)) activeUsers.add(a.Usuario); });
 
-        function formatDuration(start, end) {
-            const s = new Date(start);
-            const e = end ? new Date(end) : new Date();
-            const diffMs = e - s;
-            if (diffMs < 0) return "< 1m";
-            const diffHrs = Math.floor(diffMs / 3600000);
-            const diffMins = Math.floor((diffMs % 3600000) / 60000);
-            return `${diffHrs}h ${diffMins}m`;
-        }
+                const sortedUsers = Array.from(activeUsers).sort();
 
-        function formatTime(dateStr) {
-            return new Date(dateStr).toLocaleTimeString('es-MX', { hour: '2-digit', minute:'2-digit' });
-        }
+                if (sortedUsers.length === 0) {
+                    userList.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top: 20px;">No hay actividad este día.</div>';
+                    mainContent.innerHTML = '<div class="empty-state"><h3>Sin Registros</h3><p>Nadie ingresó al servidor en la fecha seleccionada.</p></div>';
+                    return;
+                }
 
-        function renderDashboard(user, dateStr) {
-            // Filter Data
-            const userAccesos = DB.Accesos.filter(a => a.Usuario === user && a.Inicio.startsWith(dateStr));
-            const userApps = DB.Apps.filter(a => a.Usuario === user && a.Inicio.startsWith(dateStr));
+                sortedUsers.forEach((user, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'user-item';
+                    div.innerHTML = `<div class="user-name">${user}</div><div class="user-meta">Clic para expandir</div>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+                        div.classList.add('active');
+                        renderDashboard(user, selectedDate);
+                    };
+                    userList.appendChild(div);
+                    
+                    // Auto-select first user
+                    if (idx === 0) div.click();
+                });
+            }
 
-            let totalConexiones = userAccesos.length;
-            let totalApps = userApps.length;
-            
-            // Render Header
-            let html = `
-                <div class="header-dash">
-                    <div>
-                        <h2>${user}</h2>
-                        <p>Actividad registrada el ${dateStr}</p>
+            function formatDuration(start, end) {
+                const s = new Date(start);
+                const e = end ? new Date(end) : new Date();
+                const diffMs = e - s;
+                if (diffMs < 0) return "< 1m";
+                const diffHrs = Math.floor(diffMs / 3600000);
+                const diffMins = Math.floor((diffMs % 3600000) / 60000);
+                return `${diffHrs}h ${diffMins}m`;
+            }
+
+            function formatTime(dateStr) {
+                return new Date(dateStr).toLocaleTimeString('es-MX', { hour: '2-digit', minute:'2-digit' });
+            }
+
+            function renderDashboard(user, dateStr) {
+                // Filter Data
+                const userAccesos = DB.Accesos.filter(a => a.Usuario === user && a.Inicio.startsWith(dateStr));
+                const userApps = DB.Apps.filter(a => a.Usuario === user && a.Inicio.startsWith(dateStr));
+
+                let totalConexiones = userAccesos.length;
+                let totalApps = userApps.length;
+                
+                // Render Header
+                let html = `
+                    <div class="header-dash">
+                        <div>
+                            <h2>${user}</h2>
+                            <p>Actividad registrada el ${dateStr}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value">${totalConexiones}</div>
-                        <div class="metric-label">Inicios de Sesión</div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">${totalConexiones}</div>
+                            <div class="metric-label">Inicios de Sesión</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${totalApps}</div>
+                            <div class="metric-label">Programas Ejecutados</div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-value">${totalApps}</div>
-                        <div class="metric-label">Programas Ejecutados</div>
-                    </div>
-                </div>
-            `;
+                `;
 
-            // Render Accesos (Timeline)
-            html += `<div class="section-title">Línea de Tiempo de Conexión</div>`;
-            if (userAccesos.length > 0) {
-                html += `<div class="timeline-container">`;
-                userAccesos.forEach(a => {
-                    const status = a.Fin ? `<span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">Cerró sesión a las ${formatTime(a.Fin)}</span>` : `<span class="status-active">EN LÍNEA</span>`;
-                    html += `
-                        <div class="timeline-item">
-                            <div class="time-box">${formatTime(a.Inicio)}</div>
-                            <div class="event-box">
-                                <span class="event-title">Sesión ${a.Tipo}</span>
-                                <span class="event-dur">Duración: ${formatDuration(a.Inicio, a.Fin)}</span>
-                                ${status}
+                // Render Accesos (Timeline)
+                html += `<div class="section-title">Línea de Tiempo de Conexión</div>`;
+                if (userAccesos.length > 0) {
+                    html += `<div class="timeline-container">`;
+                    userAccesos.forEach(a => {
+                        const status = a.Fin ? `<span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">Cerró sesión a las ${formatTime(a.Fin)}</span>` : `<span class="status-active">EN LÍNEA</span>`;
+                        html += `
+                            <div class="timeline-item">
+                                <div class="time-box">${formatTime(a.Inicio)}</div>
+                                <div class="event-box">
+                                    <span class="event-title">Sesión ${a.Tipo}</span>
+                                    <span class="event-dur">Duración: ${formatDuration(a.Inicio, a.Fin)}</span>
+                                    ${status}
+                                </div>
                             </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            } else {
-                html += `<p style="color: var(--text-muted)">No hay inicios de sesión directos registrados.</p>`;
+                        `;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<p style="color: var(--text-muted)">No hay inicios de sesión directos registrados.</p>`;
+                }
+
+                // Render Apps
+                html += `<div class="section-title">Programas Utilizados</div>`;
+                if (userApps.length > 0) {
+                    html += `<div class="app-grid">`;
+                    userApps.forEach(a => {
+                        const status = a.Fin ? `Cerrado a las ${formatTime(a.Fin)}` : `En Uso Actualmente`;
+                        html += `
+                            <div class="app-card">
+                                <div class="app-name">${a.Programa}</div>
+                                <div class="app-time">Abrió: ${formatTime(a.Inicio)} &bull; Duró ${formatDuration(a.Inicio, a.Fin)}</div>
+                                <div class="app-time" style="margin-top:5px; color:var(--secondary)">${status}</div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<p style="color: var(--text-muted)">No ejecutó programas clave este día.</p>`;
+                }
+
+                mainContent.innerHTML = html;
             }
 
-            // Render Apps
-            html += `<div class="section-title">Programas Utilizados</div>`;
-            if (userApps.length > 0) {
-                html += `<div class="app-grid">`;
-                userApps.forEach(a => {
-                    const status = a.Fin ? `Cerrado a las ${formatTime(a.Fin)}` : `En Uso Actualmente`;
-                    html += `
-                        <div class="app-card">
-                            <div class="app-name">${a.Programa}</div>
-                            <div class="app-time">Abrió: ${formatTime(a.Inicio)} &bull; Duró ${formatDuration(a.Inicio, a.Fin)}</div>
-                            <div class="app-time" style="margin-top:5px; color:var(--secondary)">${status}</div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            } else {
-                html += `<p style="color: var(--text-muted)">No ejecutó programas clave este día.</p>`;
-            }
-
-            mainContent.innerHTML = html;
+            // Init
+            renderUsers();
+        } catch (err) {
+            document.getElementById('mainContent').innerHTML = '<div style="color:red; padding:20px;"><h3>Error de Ejecución</h3><p>' + err.message + '</p></div>';
         }
 
-        // Init
-        renderUsers();
     </script>
 </body>
 </html>
