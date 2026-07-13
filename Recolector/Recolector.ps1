@@ -163,6 +163,7 @@ try {
             } elseif ($ev.Id -eq 4689) {
                 if (-not $HistorialApp[$key].Fin) { $HistorialApp[$key].Fin = $ev.TimeCreated }
             }
+            }
         }
     }
 
