@@ -4,10 +4,9 @@
 #>
 
 $DirectorioActual = $PSScriptRoot
-if ([string]::IsNullOrWhiteSpace($DirectorioActual)) {
-    try { $DirectorioActual = [System.IO.Path]::GetDirectoryName([System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) } catch {}
+if ([string]::IsNullOrWhiteSpace($DirectorioActual)) { 
+    $DirectorioActual = $PWD.Path 
 }
-if ([string]::IsNullOrWhiteSpace($DirectorioActual)) { $DirectorioActual = $PWD.Path }
 
 $RutaBase = Join-Path -Path $DirectorioActual -ChildPath "Recolector"
 $RutaDB = Join-Path -Path $RutaBase -ChildPath "Auditoria.db"
